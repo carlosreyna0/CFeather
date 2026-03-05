@@ -1,5 +1,3 @@
-//author: https://github.com/carlosreyna0
-
 #include "tokenizer.h"
 #include <string.h>
 
@@ -21,7 +19,7 @@ enum TokenType
 }
 Token analyze(char[] token_text)
 {
-	TokenType type = NULL; //if type is unchanged and stays NULL, then that means there is a syntax error
+	TokenType type = NULL; //if type is unchanged and stays NULL, then that means there is a syntax error in the Feather script
 	
 	if(strcmp(token_text, "+") == 0)
 	{
@@ -153,7 +151,7 @@ Token analyze(char[] token_text)
 		int identifier = 1, single_string = 0, double_string = 0;
 		int exit = 0;
 		
-		for(int i = 0; i < sizeof(token_text) / sizeof(token_text[0]); i++)
+		for(int i = 0; i < sizeof(token_text) / sizeof(char); i++)
 		{
 			char current = token_text[i];
 			if(exit == 1)
@@ -162,7 +160,7 @@ Token analyze(char[] token_text)
 			}
 			switch(current)
 			{
-				case '0' case '1' case '2' case '3' case '4' case '5' case '6' case '7' case '8' case '9' case '0' case '.':
+				case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9': case '0': case '.':
 					if(i == 0)
 					{
 						identifier = 0;
@@ -245,12 +243,38 @@ Token analyze(char[] token_text)
 }
 Token tokenize(char[] src)
 {
-	char[] currentText = "";
-	for(int i = 0; i < sizeof(src) / sizeof(src[0]); i++)
+	/*
+		example:
+			add(a, b)
+				return a + b
+			x = 23
+			y = 5
+			print(add(a, b))
+	*/
+	char[sizeof(src) / sizeof(char)] current_text = "";
+	Token[sizeof(src) / sizeof(char)] tokens;
+	
+	for(int i = 0; i < sizeof(src) / sizeof(char); i++)
 	{
 		char current = src[i];
 		
+		switch(current)
+		{
+			case '+': case '-': case '*': case '/': case '^': case '%': case '=': case '(': case ')': case '[': case ']': case ':': case '?': case '[': case ']': case '.': case ',':
+				//symbols
+				break
+			case ' ':
+				//check if it is a space or indentation, if a space, lexically analyze current_text and then add it as a token 
+				break;
+			case '\n':
+				//newline, send to lexer than add as a token
+				break;
+			default:
+				//identifier or number, modify current_text to include it
+				break;
+		}
 		
 	}
 	return NULL;
+
 }
