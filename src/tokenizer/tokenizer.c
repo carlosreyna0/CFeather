@@ -3,7 +3,7 @@
 
 typedef struct
 {
-	char[] text;
+	char text[];
 	TokenType type;
 	int line;
 }Token;
@@ -17,7 +17,7 @@ enum TokenType
 	CURLY_BRACE_OPEN, CURLY_BRACE_CLOSE,
 	SQUARE_BRACE_OPEN, SQUARE_BRACE_CLOSE
 }
-Token analyze(char[] token_text)
+Token analyze(char token_text[])
 {
 	TokenType type = NULL; //if type is unchanged and stays NULL, then that means there is a syntax error in the Feather script
 	
@@ -241,7 +241,7 @@ Token analyze(char[] token_text)
 	
 	return type;
 }
-Token tokenize(char[] src)
+Token tokenize(char src[])
 {
 	/*
 		example:
@@ -251,9 +251,8 @@ Token tokenize(char[] src)
 			y = 5
 			print(add(a, b))
 	*/
-	char[sizeof(src) / sizeof(char)] current_text = "";
-	Token[sizeof(src) / sizeof(char)] tokens;
-	
+	char current_text[strlen(src)] = "";
+	Token tokens[strlen(src)];
 	for(int i = 0; i < sizeof(src) / sizeof(char); i++)
 	{
 		char current = src[i];
@@ -269,6 +268,9 @@ Token tokenize(char[] src)
 			case '\n':
 				//newline, send to lexer than add as a token
 				break;
+			case '\0':
+				//end of source code
+				break;
 			default:
 				//identifier or number, modify current_text to include it
 				break;
@@ -278,3 +280,4 @@ Token tokenize(char[] src)
 	return NULL;
 
 }
+
