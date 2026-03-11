@@ -151,7 +151,7 @@ Token analyze(char token_text[])
 		int identifier = 1, single_string = 0, double_string = 0;
 		int exit = 0;
 		
-		for(int i = 0; i < sizeof(token_text) / sizeof(char); i++)
+		for(int i = 0; i < strlen(token_text); i++)
 		{
 			char current = token_text[i];
 			if(exit == 1)
@@ -213,7 +213,7 @@ Token analyze(char token_text[])
 		else if(single_string == 1)
 		{
 			//'a string'
-			if(token_text[sizeof(token_text) / sizeof(token_text[0]) - 1] == '\'')
+			if(token_text[strlen(token_text) - 1] == '\'')
 			{
 				type = LITERAL;
 			}
@@ -222,7 +222,7 @@ Token analyze(char token_text[])
 		else if(double_string == 1)
 		{
 			//"a string"
-			if(token_text[sizeof(token_text) / sizeof(token_text[0]) - 1] == '"')
+			if(token_text[strlen(token_text) - 1] == '"')
 			{
 				type = LITERAL;
 			}
@@ -231,7 +231,7 @@ Token analyze(char token_text[])
 		else if(identifier == 0)
 		{
 			//a number
-			if(token_text[sizeof(token_text) / sizeof(token_text[0]) - 1] != '.')
+			if(token_text[strlen(token_text) - 1] != '.')
 			{
 				type = LITERAL;
 			}
@@ -253,6 +253,8 @@ Token tokenize(char src[])
 	*/
 	char current_text[strlen(src)] = "";
 	Token tokens[strlen(src)];
+	int token_index = 0;
+	
 	for(int i = 0; i < sizeof(src) / sizeof(char); i++)
 	{
 		char current = src[i];
@@ -265,11 +267,12 @@ Token tokenize(char src[])
 			case ' ':
 				//check if it is a space or indentation, if a space, lexically analyze current_text and then add it as a token 
 				break;
-			case '\n':
-				//newline, send to lexer than add as a token
-				break;
-			case '\0':
-				//end of source code
+			case '\n': '\0':
+				//send to lexer than add as a token
+				token_index ++;
+				
+				tokens[token_index] = analyze(current_text);
+				current_text = "";
 				break;
 			default:
 				//identifier or number, modify current_text to include it
@@ -280,4 +283,5 @@ Token tokenize(char src[])
 	return NULL;
 
 }
+
 
