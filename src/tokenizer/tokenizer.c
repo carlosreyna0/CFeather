@@ -1,5 +1,7 @@
 #include "tokenizer.h"
 #include <string.h>
+#define TRUE 1
+#define FALSE 0
 
 typedef struct
 {
@@ -247,6 +249,7 @@ Token tokenize(char src[])
 		example:
 			add(a, b)
 				return a + b
+				
 			x = 23
 			y = 5
 			print(add(a, b))
@@ -254,6 +257,7 @@ Token tokenize(char src[])
 	char current_text[strlen(src)] = "";
 	Token tokens[strlen(src)];
 	int token_index = 0;
+	int prev_was_symbol = FALSE; //add checks in each case for prev_was_symbol so a+b can be seen as 'a', '+', 'b' instead of "a+b"
 	
 	for(int i = 0; i < sizeof(src) / sizeof(char); i++)
 	{
@@ -262,7 +266,38 @@ Token tokenize(char src[])
 		switch(current)
 		{
 			case '+': case '-': case '*': case '/': case '^': case '%': case '=': case '(': case ')': case '[': case ']': case ':': case '?': case '[': case ']': case '.': case ',':
-				//symbols
+				/*
+					if current_text is not a symbol, then add it as a token, and then set prev_was_symbol to true, and copy current to current_text.
+					if current_text IS a symbol, then concatenate current to it and set it for analysis.
+				*/
+				char current_as_string[2];
+				current_as_string[0] = current;
+				current_as_string[1] = '\0';
+				
+				if(strlen(current_text) == 1)
+				{
+					switch(current_text[0])
+					{
+						case '+': case '-': case '*': case '/': case '^': case '%': case '=': case '(': case ')': case '[': case ']': case ':': case '?': case '[': case ']': case '.': case ',':
+							//current_text is a symbol
+							strcat(current_text, current_as_string);
+							
+							token_index ++;
+							tokens[token_index] = analyze(current_text);
+							strcpy(current_text, "");
+							
+							break;
+					}
+				}
+				else
+				{
+					//current_text is not a symbol
+					token_index ++;
+					tokens[token_index] = analyze(current_text);
+							
+					strcpy(current_text, current_as_string);
+					prev_was_symbol = TRUE;
+				}
 				break
 			case ' ':
 				//check if it is a space or indentation, if a space, lexically analyze current_text and then add it as a token 
@@ -272,10 +307,15 @@ Token tokenize(char src[])
 				token_index ++;
 				
 				tokens[token_index] = analyze(current_text);
-				current_text = "";
+				strcpy(current_text, "");
 				break;
 			default:
-				//identifier or number, modify current_text to include it
+				//identifier or number, concatenate current to the end of current_text
+				char current_as_string[2];
+				current_as_string[0] = current;
+				current_as_string[1] = '\0';
+				
+				strcat(current_text, current_as_string);
 				break;
 		}
 		
